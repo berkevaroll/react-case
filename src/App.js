@@ -1,14 +1,18 @@
-import logo from './logo.svg';
 import './App.css';
-import { store } from "./actions/store";
-import { Provider } from "react-redux";
 import Login from './Login';
 
+import React, { Component } from 'react';
 
-function App() {
-  return (
-    <Login/>
-  );
+class App extends Component {
+  constructor() {
+    super();
+  }
+
+  render() {
+    return (
+      <Login/>
+    );
+  }
 }
 
 export default App;

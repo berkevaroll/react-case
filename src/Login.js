@@ -1,22 +1,28 @@
 import React, { Component } from "react";
 import axios from "axios";
-
 export default class Login extends Component{
 
     constructor(props){
         super(props);
 
         this.state = {
-            weatherdata:"",
+            weatherinfo:[{
+                date:"",
+                temperatureC:"",
+                summary:"",
+            }],
             username:"",
             password:"",
-            loginErrors:""
+            loginErrors:"",
         };
-
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleChange = this.handleChange.bind(this);
     }
-    
+
+    routeChange = () =>{ 
+        let path = `/Page`; 
+        this.history.push(path);
+      }
     handleChange(event){
         this.setState({
             [event.target.name]: event.target.value
@@ -26,9 +32,11 @@ export default class Login extends Component{
         axios.get("http://localhost:51681/weatherforecast"
         )
         .then(response => {
+            //Never will be executed
             console.log("response:" + JSON.stringify(response.data))
         })
         .catch(error=>{
+            alert("Unauthorized attempt to reach content!");
             console.log(error);
         });
 
@@ -41,17 +49,36 @@ export default class Login extends Component{
            
                 username:username,
                 password:password
-           
+
         })
         .then(response => {
-            console.log("response:" + response.data.token);
-            axios.get("http://localhost:51681/weatherforecast", { headers: {"Authorization" : `Bearer ${response.data.token}`} })
-            .then(res => {
-            console.log(JSON.stringify(res.data));});
-            this.setState({ weatherdata: JSON.stringify(this.res.data) });
+            if(response.data.token != null){
+                console.log("response:" + response.data.token);
+                axios.get("http://localhost:51681/weatherforecast", { headers: {"Authorization" : `Bearer ${response.data.token}`} })
+                .then(res => {
+                    let temparr = [];
+                    for(let i =0;i<res.data.length;i++){
+                        temparr.push({date: res.data[i].date,temperatureC: res.data[i].temperatureC, summary: res.data[i].summary})
+                    }
+                this.setState({
+                    weatherinfo: temparr
+                });
+                // if(this.state.weatherinfo != null){
+                //     console.log("weatherinfo : "+ JSON.stringify(this.state.weatherinfo));
+                // }
+                // console.log(JSON.stringify(res.data));
+            });
+            }
         })
         .catch(error=>{
-            console.log(error);
+            this.setState({
+                username: ""
+              });
+              this.setState({
+                password: ""
+              });
+            alert("Invalid username or password! Please try again.");
+
         });
 
         event.preventDefault();
@@ -79,7 +106,12 @@ export default class Login extends Component{
                          <button type="submit">Login(Go to an Authorized area)</button>
                 </form><button  onClick={this.handleSubmitUnathorized}>Get weatherforecast Unathorized (Code 401)</button>
                 <br></br>
-                {this.weatherdata}
+                Date:<br></br>
+                {JSON.stringify(this.state.weatherinfo[0].date)}<br></br>
+                Temperature:<br></br>
+                {this.state.weatherinfo[0].temperatureC}<br></br>
+                Summary:<br></br>
+                {this.state.weatherinfo[0].summary}<br></br>
             </div>
         )
     }
